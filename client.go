@@ -20,6 +20,10 @@ import (
 
 // Fixme: this is clunky
 var f mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
+}
+
+func sendMessageCallback(ch chan<- *MessageCallback, msg mqtt.Message) {
+	var rv interface{}
 	hdr := &commandHeader{}
 	err := json.Unmarshal(msg.Payload(), &hdr)
 	if err == nil {
@@ -27,16 +31,19 @@ var f mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 		case MessageEnvSensorData:
 			envstate := &EnvironmentState{}
 			err = mapstructure.Decode(hdr.Data, &envstate)
-			fmt.Printf("## envstate = %+v\n", envstate)
+			rv = envstate
 		case MessageCurrentState:
 			prodstate := &ProductState{}
 			err = mapstructure.Decode(hdr.ProductState, &prodstate)
-			fmt.Printf("## prodstate = %+v\n", prodstate)
+			rv = prodstate
 		case MessageStateChange:
-		//	parseStateChangePayload(hdr.ProductState)
+			rv, err = parseStateChangePayload(hdr.ProductState)
 		default:
 			fmt.Printf("Warning: Unknown state update: %s, json=%s\n", hdr.Command, msg.Payload())
 		}
+	}
+	if ch != nil {
+		ch <- &MessageCallback{Error: err, Message: rv}
 	}
 }
 
@@ -64,7 +71,7 @@ func (c *client) Connect() error {
 	mqttOpts := mqtt.NewClientOptions().AddBroker(c.opts.DeviceAddress)
 	mqttOpts.SetUsername(c.opts.Username)
 	mqttOpts.SetPassword(c.opts.Password)
-	mqttOpts.SetDefaultPublishHandler(f)
+	mqttOpts.SetDefaultPublishHandler(func(client mqtt.Client, msg mqtt.Message) { sendMessageCallback(c.opts.CallbackChan, msg) })
 	mqttClient := mqtt.NewClient(mqttOpts)
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()

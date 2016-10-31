@@ -16,9 +16,15 @@ const (
 	TypeModelN455 = "455" // pure hot & cool
 )
 
+type MessageCallback struct {
+	Error   error
+	Message interface{}
+}
+
 type ClientOpts struct {
 	Username      string // The username to use for this connection
 	Password      string // The password to use for this connection
 	DeviceAddress string // The ip+port of the device in the tcp://IP:PORT format
 	Model         string // One of the TypeModel* constants
+	CallbackChan  chan<- *MessageCallback
 }
