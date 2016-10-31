@@ -26,6 +26,7 @@ func sendMessageCallback(ch chan<- *MessageCallback, msg mqtt.Message) {
 	var rv interface{}
 	hdr := &commandHeader{}
 	err := json.Unmarshal(msg.Payload(), &hdr)
+	fmt.Printf("<< raw: %s\n", msg.Payload())
 	if err == nil {
 		switch hdr.Command {
 		case MessageEnvSensorData:
@@ -36,6 +37,10 @@ func sendMessageCallback(ch chan<- *MessageCallback, msg mqtt.Message) {
 			prodstate := &ProductState{}
 			err = mapstructure.Decode(hdr.ProductState, &prodstate)
 			rv = prodstate
+		case MessageDeviceCredentials:
+			devcred := &DeviceCredentials{}
+			err = json.Unmarshal(msg.Payload(), &devcred)
+			rv = devcred
 		case MessageStateChange:
 			rv, err = parseStateChangePayload(hdr.ProductState)
 		default:
@@ -92,6 +97,14 @@ func (c *client) Disconnect(quiesce uint) {
 // Helper function to bootstrap a unconfigured device.
 // Not implemented yet
 func (c *client) WifiBootstrap(essid string, password string) error {
+	c.opts.Username = "initialconnection"
+	c.opts.Password = ""
+	// first, subscribe to these special endpoints:
+	c.MqttClient.Subscribe(c.getDeviceTopic("credentials"), 0, nil).Wait()
+	// ..and assemble our commands:
+	c.sendCommand(&commandHeader{Command: MessageJoinNetwork, WifiSsid: essid, WifiPassword: password, RequestId: "0123456789ABCDEF"})
+	c.sendCommand(&commandHeader{Command: MessageAuthoriseUserRequest, RequestId: "01234567890ABCDEF", Id: "00000000-0000-0000-0000-000000000000"})
+	c.sendCommand(&commandHeader{Command: MessageCloseAccessPoint})
 	return nil
 }
 

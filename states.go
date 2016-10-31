@@ -12,9 +12,13 @@ package dyslink
 
 // Messages related to fan states
 const (
-	MessageCurrentState  = "CURRENT-STATE"                     // incoming state data
-	MessageEnvSensorData = "ENVIRONMENTAL-CURRENT-SENSOR-DATA" // incoming environmental data
-	MessageStateChange   = "STATE-CHANGE"                      // incoming state change data
+	MessageCurrentState         = "CURRENT-STATE"                     // incoming state data
+	MessageEnvSensorData        = "ENVIRONMENTAL-CURRENT-SENSOR-DATA" // incoming environmental data
+	MessageStateChange          = "STATE-CHANGE"                      // incoming state change data
+	MessageJoinNetwork          = "JOIN-NETWORK"
+	MessageAuthoriseUserRequest = "AUTHORISE-USER-REQUEST"
+	MessageCloseAccessPoint     = "CLOSE-ACCESS-POINT"
+	MessageDeviceCredentials    = "DEVICE-CREDENTIALS"
 )
 
 // States of fan modules
@@ -35,6 +39,10 @@ type commandHeader struct {
 	ModeReason   string      `json:"mode-reason,omitempty"`
 	Data         interface{} `json:"data,omitempty"`
 	ProductState interface{} `json:"product-state,omitempty"`
+	RequestId    string      `json:"requestId,omitempty"`
+	Id           string      `json:"id,omitempty"`
+	WifiSsid     string      `json:"ssid,omitempty"`
+	WifiPassword string      `json:"password,omitempty"`
 }
 
 // A fan status message
@@ -75,4 +83,10 @@ type EnvironmentState struct {
 	Particle    string `mapstructure:"pact"`
 	UnknownVact string `mapstructure:"vact"`
 	SleepTimer  string `mapstructure:"sltm"`
+}
+
+// Reply for a credentials request (note: this is sent in a commandHeader)
+type DeviceCredentials struct {
+	SerialNumber string `json:"serialNumber"`
+	Password     string `json:"apPasswordHash"`
 }
