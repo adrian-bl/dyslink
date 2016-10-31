@@ -49,31 +49,31 @@ type commandHeader struct {
 // Note that bools and ints are strings, that's because
 // they also take the special `StateKep` pragma :-/
 type FanState struct {
-	FanMode     string `json:"fmod,omitempty"`
-	FanSpeed    string `json:"fnsp,omitempty"`
-	Oscillate   string `json:"oson,omitempty"`
-	SleepTimer  string `json:"sltm,omitempty"`
-	Rhtm        string `json:"rhtm,omitempty"` // collect data (??)
-	ResetFilter string `json:"rstf,omitempty"` // resets lifetime of filter?
-	Qtar        string `json:"qtar,omitempty"`
-	NightMode   string `json:"nmod,omitempty"`
+	FanMode           string `json:"fmod,omitempty"`
+	FanSpeed          string `json:"fnsp,omitempty"`
+	Oscillate         string `json:"oson,omitempty"`
+	SleepTimer        string `json:"sltm,omitempty"`
+	StandbyMonitoring string `json:"rhtm,omitempty"` // always run + capture environment data
+	ResetFilter       string `json:"rstf,omitempty"` // resets lifetime of filter?
+	Qtar              string `json:"qtar,omitempty"`
+	NightMode         string `json:"nmod,omitempty"`
 }
 
 // A product status message
 // Similar to FanState, but this is something we
 // receive from a subscription
 type ProductState struct {
-	FanMode     string `mapstructure:"fmod"`
-	FanSpeed    string `mapstructure:"fnsp"`
-	Oscillate   string `mapstructure:"oson"`
-	SleepTimer  string `mapstructure:"sltm"`
-	Rhtm        string `mapstructure:"rhtm"` // collect data (??)
-	ResetFilter string `mapstructure:"rstf"` // resets lifetime of filter?
-	Qtar        string `mapstructure:"qtar"`
-	NightMode   string `mapstructure:"nmod"`
-	FilterLife  string `mapstructure:"filf"`
-	UnknownErcd string `mapstructure:"ercd"`
-	UnknownWacd string `mapstructure:"wacd"`
+	FanMode           string `mapstructure:"fmod"`
+	FanSpeed          string `mapstructure:"fnsp"`
+	Oscillate         string `mapstructure:"oson"`
+	SleepTimer        string `mapstructure:"sltm"`
+	StandbyMonitoring string `mapstructure:"rhtm"`
+	ResetFilter       string `mapstructure:"rstf"` // resets lifetime of filter?
+	Qtar              string `mapstructure:"qtar"`
+	NightMode         string `mapstructure:"nmod"`
+	FilterLife        string `mapstructure:"filf"`
+	UnknownErcd       string `mapstructure:"ercd"`
+	UnknownWacd       string `mapstructure:"wacd"`
 }
 
 // The current environment data as reported by the device
