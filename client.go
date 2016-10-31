@@ -14,6 +14,7 @@ import (
 	"encoding/json"
 	"fmt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/mitchellh/mapstructure"
 	"time"
 )
 
@@ -22,18 +23,19 @@ var f mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	hdr := &commandHeader{}
 	err := json.Unmarshal(msg.Payload(), &hdr)
 	if err == nil {
-		if hdr.Command == MessageEnvSensorData && hdr.Data != nil {
-			raw, _ := json.Marshal(hdr.Data)
+		switch hdr.Command {
+		case MessageEnvSensorData:
 			envstate := &EnvironmentState{}
-			json.Unmarshal(raw, &envstate)
-			fmt.Printf(">> REJ: %+v\n", envstate)
-		} else if hdr.Command == MessageCurrentState && hdr.ProductState != nil {
-			raw, _ := json.Marshal(hdr.ProductState)
+			err = mapstructure.Decode(hdr.Data, &envstate)
+			fmt.Printf("## envstate = %+v\n", envstate)
+		case MessageCurrentState:
 			prodstate := &ProductState{}
-			json.Unmarshal(raw, &prodstate)
-			fmt.Printf("> %+v\n", prodstate)
-		} else {
-			fmt.Printf("Warning: Unknwon state update: %s, json=%s\n", hdr.Command, msg.Payload())
+			err = mapstructure.Decode(hdr.ProductState, &prodstate)
+			fmt.Printf("## prodstate = %+v\n", prodstate)
+		case MessageStateChange:
+		//	parseStateChangePayload(hdr.ProductState)
+		default:
+			fmt.Printf("Warning: Unknown state update: %s, json=%s\n", hdr.Command, msg.Payload())
 		}
 	}
 }

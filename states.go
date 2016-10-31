@@ -55,24 +55,24 @@ type FanState struct {
 // Similar to FanState, but this is something we
 // receive from a subscription
 type ProductState struct {
-	FanMode     string `json:"fmod"`
-	FanSpeed    string `json:"fnsp"`
-	Oscillate   string `json:"oson"`
-	SleepTimer  string `json:"sltm"`
-	Rhtm        string `json:"rhtm"` // collect data (??)
-	ResetFilter string `json:"rstf"` // resets lifetime of filter?
-	Qtar        string `json:"qtar"`
-	NightMode   string `json:"nmod"`
-	FilterLife  string `json:"filf"`
-	UnknownErcd string `json:"ercd"`
-	UnknownWacd string `json:"wacd"`
+	FanMode     string `mapstructure:"fmod"`
+	FanSpeed    string `mapstructure:"fnsp"`
+	Oscillate   string `mapstructure:"oson"`
+	SleepTimer  string `mapstructure:"sltm"`
+	Rhtm        string `mapstructure:"rhtm"` // collect data (??)
+	ResetFilter string `mapstructure:"rstf"` // resets lifetime of filter?
+	Qtar        string `mapstructure:"qtar"`
+	NightMode   string `mapstructure:"nmod"`
+	FilterLife  string `mapstructure:"filf"`
+	UnknownErcd string `mapstructure:"ercd"`
+	UnknownWacd string `mapstructure:"wacd"`
 }
 
 // The current environment data as reported by the device
 type EnvironmentState struct {
-	Temperature string `json:"tact"`
-	Humidity    string `json:"hact"`
-	Particle    string `json:"pact"`
-	UnknownVact string `json:"vact"`
-	SleepTimer  string `json:"sltm"`
+	Temperature string `mapstructure:"tact"`
+	Humidity    string `mapstructure:"hact"`
+	Particle    string `mapstructure:"pact"`
+	UnknownVact string `mapstructure:"vact"`
+	SleepTimer  string `mapstructure:"sltm"`
 }
