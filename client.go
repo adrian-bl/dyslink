@@ -18,10 +18,6 @@ import (
 	"time"
 )
 
-// Fixme: this is clunky
-var f mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-}
-
 func sendMessageCallback(ch chan<- *MessageCallback, msg mqtt.Message) {
 	var rv interface{}
 	hdr := &commandHeader{}
@@ -95,9 +91,8 @@ func (c *client) Disconnect(quiesce uint) {
 }
 
 // Helper function to bootstrap a unconfigured device.
-// Not implemented yet
 func (c *client) WifiBootstrap(essid string, password string) error {
-	c.opts.Username = "initialconnection"
+	c.opts.Username = "initialconnection" // username is part of the topic: the credentials cant/were-not used for this connection, so we are just overwriting them
 	c.opts.Password = ""
 	// first, subscribe to these special endpoints:
 	c.MqttClient.Subscribe(c.getDeviceTopic("credentials"), 0, nil).Wait()

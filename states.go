@@ -23,13 +23,16 @@ const (
 
 // States of fan modules
 const (
-	FanModeOff   = "OFF"
-	FanModeAuto  = "AUTO"
-	FanModeOn    = "FAN"
-	NightModeOn  = "ON"
-	NightModeOff = "OFF"
-	OscillateOn  = "ON"
-	OscillateOff = "OFF"
+	FanModeOff    = "OFF"
+	FanModeAuto   = "AUTO"
+	FanModeOn     = "FAN"
+	NightModeOn   = "ON"
+	NightModeOff  = "OFF"
+	OscillateOn   = "ON"
+	OscillateOff  = "OFF"
+	QualityLow    = "0001"
+	QualityNormal = "0003"
+	QualityHigh   = "0004"
 )
 
 // The command-json sent to the device
@@ -55,7 +58,7 @@ type FanState struct {
 	SleepTimer        string `json:"sltm,omitempty"`
 	StandbyMonitoring string `json:"rhtm,omitempty"` // always run + capture environment data
 	ResetFilter       string `json:"rstf,omitempty"` // resets lifetime of filter?
-	Qtar              string `json:"qtar,omitempty"`
+	QualityTarget     string `json:"qtar,omitempty"` // the air-target in auto-mode
 	NightMode         string `json:"nmod,omitempty"`
 }
 
@@ -69,7 +72,7 @@ type ProductState struct {
 	SleepTimer        string `mapstructure:"sltm"`
 	StandbyMonitoring string `mapstructure:"rhtm"`
 	ResetFilter       string `mapstructure:"rstf"` // resets lifetime of filter?
-	Qtar              string `mapstructure:"qtar"`
+	QualityTarget     string `mapstructure:"qtar"`
 	NightMode         string `mapstructure:"nmod"`
 	FilterLife        string `mapstructure:"filf"`
 	UnknownErcd       string `mapstructure:"ercd"`
