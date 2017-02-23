@@ -33,6 +33,8 @@ const (
 	QualityLow    = "0001"
 	QualityNormal = "0003"
 	QualityHigh   = "0004"
+	HeatModeOn    = "HEAT"
+	HeatModeOff   = "OFF"
 )
 
 // The command-json sent to the device
@@ -60,6 +62,8 @@ type FanState struct {
 	ResetFilter       string `json:"rstf,omitempty"` // resets lifetime of filter?
 	QualityTarget     string `json:"qtar,omitempty"` // the air-target in auto-mode
 	NightMode         string `json:"nmod,omitempty"`
+	HeatMode          string `json:"hmod,omitempty"`
+	HeatTarget        string `json:"hmax,omitempty"`
 }
 
 // A product status message
@@ -67,6 +71,7 @@ type FanState struct {
 // receive from a subscription
 type ProductState struct {
 	FanMode           string `mapstructure:"fmod"`
+	FanState          string `mapstructure:"fnst"`
 	FanSpeed          string `mapstructure:"fnsp"`
 	Oscillate         string `mapstructure:"oson"`
 	SleepTimer        string `mapstructure:"sltm"`
@@ -74,9 +79,15 @@ type ProductState struct {
 	ResetFilter       string `mapstructure:"rstf"` // resets lifetime of filter?
 	QualityTarget     string `mapstructure:"qtar"`
 	NightMode         string `mapstructure:"nmod"`
+	HeatMode          string `mapstructure:"hmod"`
+	HeatState         string `mapstructure:"hsta"`
+	HeatTarget        string `mapstructure:"hmax"`
 	FilterLife        string `mapstructure:"filf"`
 	UnknownErcd       string `mapstructure:"ercd"`
 	UnknownWacd       string `mapstructure:"wacd"`
+	UnknownRhtm       string `mapstructure:"rhtm"`
+	UnknownFfoc       string `mapstructure:"ffoc"`
+	UnknownTilt       string `mapstructure:"tilt"`
 }
 
 // The current environment data as reported by the device
