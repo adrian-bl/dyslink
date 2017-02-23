@@ -18,11 +18,13 @@ import (
 	"time"
 )
 
-func sendMessageCallback(ch chan<- *MessageCallback, msg mqtt.Message) {
+func sendMessageCallback(ch chan<- *MessageCallback, msg mqtt.Message, debug bool) {
 	var rv interface{}
 	hdr := &commandHeader{}
 	err := json.Unmarshal(msg.Payload(), &hdr)
-	fmt.Printf("<< raw: %s\n", msg.Payload())
+	if debug {
+		fmt.Printf("<< raw: %s\n", msg.Payload())
+	}
 	if err == nil {
 		switch hdr.Command {
 		case MessageEnvSensorData:
@@ -72,7 +74,10 @@ func (c *client) Connect() error {
 	mqttOpts := mqtt.NewClientOptions().AddBroker(c.opts.DeviceAddress)
 	mqttOpts.SetUsername(c.opts.Username)
 	mqttOpts.SetPassword(c.opts.Password)
-	mqttOpts.SetDefaultPublishHandler(func(client mqtt.Client, msg mqtt.Message) { sendMessageCallback(c.opts.CallbackChan, msg) })
+	mqttOpts.SetDefaultPublishHandler(
+		func(client mqtt.Client, msg mqtt.Message) {
+			sendMessageCallback(c.opts.CallbackChan, msg, c.opts.Debug)
+		})
 	mqttClient := mqtt.NewClient(mqttOpts)
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
@@ -121,7 +126,9 @@ func (c *client) sendCommand(cmd *commandHeader) error {
 	cmd.TimeString = time.Now().UTC().Format(time.RFC3339Nano)
 
 	raw, err := json.Marshal(cmd)
-	fmt.Printf("SENDTO: %s\n", raw)
+	if c.opts.Debug {
+		fmt.Printf("SENDTO: %s\n", raw)
+	}
 	if err == nil {
 		if token := c.MqttClient.Publish(c.getDeviceTopic("command"), 1, false, raw); token.Wait() && token.Error() != nil {
 			err = token.Error()

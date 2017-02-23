@@ -27,4 +27,5 @@ type ClientOpts struct {
 	DeviceAddress string // The ip+port of the device in the tcp://IP:PORT format
 	Model         string // One of the TypeModel* constants
 	CallbackChan  chan<- *MessageCallback
+	Debug         bool
 }
