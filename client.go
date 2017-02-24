@@ -11,6 +11,8 @@
 package dyslink
 
 import (
+	"crypto/sha512"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -69,11 +71,18 @@ func NewClient(opts *ClientOpts) Client {
 	return c
 }
 
+func encodePassword(in string) string {
+	bv := []byte(in)
+	hasher := sha512.New()
+	hasher.Write(bv)
+	return base64.StdEncoding.EncodeToString(hasher.Sum(nil))
+}
+
 // Establishes a new connection
 func (c *client) Connect() error {
 	mqttOpts := mqtt.NewClientOptions().AddBroker(c.opts.DeviceAddress)
 	mqttOpts.SetUsername(c.opts.Username)
-	mqttOpts.SetPassword(c.opts.Password)
+	mqttOpts.SetPassword(encodePassword(c.opts.Password))
 	mqttOpts.SetDefaultPublishHandler(
 		func(client mqtt.Client, msg mqtt.Message) {
 			sendMessageCallback(c.opts.CallbackChan, msg, c.opts.Debug)
