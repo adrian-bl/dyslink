@@ -10,6 +10,10 @@
 
 package dyslink
 
+import (
+	"math"
+)
+
 // Messages related to fan states
 const (
 	MessageCurrentState         = "CURRENT-STATE"                     // incoming state data
@@ -23,16 +27,23 @@ const (
 
 // States of fan modules
 const (
-	FanModeOff    = "OFF"
-	FanModeAuto   = "AUTO"
-	FanModeOn     = "FAN"
-	NightModeOn   = "ON"
-	NightModeOff  = "OFF"
-	OscillateOn   = "ON"
-	OscillateOff  = "OFF"
-	QualityLow    = "0001"
-	QualityNormal = "0003"
-	QualityHigh   = "0004"
+	FanModeOff        = "OFF"
+	FanModeAuto       = "AUTO"
+	FanModeOn         = "FAN"
+	FanSpeedAuto      = "AUTO"
+	NightModeOn       = "ON"
+	NightModeOff      = "OFF"
+	OscillateOn       = "ON"
+	OscillateOff      = "OFF"
+	QualityLow        = "0001"
+	QualityNormal     = "0003"
+	QualityHigh       = "0004"
+	HeatModeOn        = "HEAT"
+	HeatModeOff       = "OFF"
+	StandbyMonitorOn  = "ON"
+	StandbyMonitorOff = "OFF"
+	FocusedModeOn     = "ON"
+	FocusedModeOff    = "OFF"
 )
 
 // The command-json sent to the device
@@ -60,6 +71,9 @@ type FanState struct {
 	ResetFilter       string `json:"rstf,omitempty"` // resets lifetime of filter?
 	QualityTarget     string `json:"qtar,omitempty"` // the air-target in auto-mode
 	NightMode         string `json:"nmod,omitempty"`
+	HeatMode          string `json:"hmod,omitempty"`
+	HeatTarget        string `json:"hmax,omitempty"`
+	FocusedMode       string `json:"ffoc,omitempty"`
 }
 
 // A product status message
@@ -67,6 +81,7 @@ type FanState struct {
 // receive from a subscription
 type ProductState struct {
 	FanMode           string `mapstructure:"fmod"`
+	FanState          string `mapstructure:"fnst"`
 	FanSpeed          string `mapstructure:"fnsp"`
 	Oscillate         string `mapstructure:"oson"`
 	SleepTimer        string `mapstructure:"sltm"`
@@ -74,9 +89,15 @@ type ProductState struct {
 	ResetFilter       string `mapstructure:"rstf"` // resets lifetime of filter?
 	QualityTarget     string `mapstructure:"qtar"`
 	NightMode         string `mapstructure:"nmod"`
+	HeatMode          string `mapstructure:"hmod"`
+	HeatState         string `mapstructure:"hsta"`
+	HeatTarget        string `mapstructure:"hmax"`
 	FilterLife        string `mapstructure:"filf"`
+	FocusedMode       string `mapstructure:"ffoc"`
 	UnknownErcd       string `mapstructure:"ercd"`
 	UnknownWacd       string `mapstructure:"wacd"`
+	UnknownRhtm       string `mapstructure:"rhtm"`
+	UnknownTilt       string `mapstructure:"tilt"`
 }
 
 // The current environment data as reported by the device
@@ -92,4 +113,19 @@ type EnvironmentState struct {
 type DeviceCredentials struct {
 	SerialNumber string `json:"serialNumber"`
 	Password     string `json:"apPasswordHash"`
+}
+
+func round(f float64) int {
+	if math.Abs(f) < 0.5 {
+		return 0
+	}
+	return int(f + math.Copysign(0.5000, f))
+}
+
+func ConvertTempToFahr(temp int) int {
+	return 33 + round(float64(temp-2736)/5.54)
+}
+
+func ConvertTempFromFahr(temp int) int {
+	return 2736 + round(float64(temp-33)*5.54)
 }
