@@ -23,18 +23,23 @@ const (
 
 // States of fan modules
 const (
-	FanModeOff    = "OFF"
-	FanModeAuto   = "AUTO"
-	FanModeOn     = "FAN"
-	NightModeOn   = "ON"
-	NightModeOff  = "OFF"
-	OscillateOn   = "ON"
-	OscillateOff  = "OFF"
-	QualityLow    = "0001"
-	QualityNormal = "0003"
-	QualityHigh   = "0004"
-	HeatModeOn    = "HEAT"
-	HeatModeOff   = "OFF"
+	FanModeOff        = "OFF"
+	FanModeAuto       = "AUTO"
+	FanModeOn         = "FAN"
+	FanSpeedAuto      = "AUTO"
+	NightModeOn       = "ON"
+	NightModeOff      = "OFF"
+	OscillateOn       = "ON"
+	OscillateOff      = "OFF"
+	QualityLow        = "0001"
+	QualityNormal     = "0003"
+	QualityHigh       = "0004"
+	HeatModeOn        = "HEAT"
+	HeatModeOff       = "OFF"
+	StandbyMonitorOn  = "ON"
+	StandbyMonitorOff = "OFF"
+	FocusedModeOn     = "ON"
+	FocusedModeOff    = "OFF"
 )
 
 // The command-json sent to the device
@@ -64,6 +69,7 @@ type FanState struct {
 	NightMode         string `json:"nmod,omitempty"`
 	HeatMode          string `json:"hmod,omitempty"`
 	HeatTarget        string `json:"hmax,omitempty"`
+	FocusedMode       string `json:"ffoc,omitempty"`
 }
 
 // A product status message
@@ -83,10 +89,10 @@ type ProductState struct {
 	HeatState         string `mapstructure:"hsta"`
 	HeatTarget        string `mapstructure:"hmax"`
 	FilterLife        string `mapstructure:"filf"`
+	FocusedMode       string `mapstructure:"ffoc"`
 	UnknownErcd       string `mapstructure:"ercd"`
 	UnknownWacd       string `mapstructure:"wacd"`
 	UnknownRhtm       string `mapstructure:"rhtm"`
-	UnknownFfoc       string `mapstructure:"ffoc"`
 	UnknownTilt       string `mapstructure:"tilt"`
 }
 
