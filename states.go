@@ -10,6 +10,10 @@
 
 package dyslink
 
+import (
+	"math"
+)
+
 // Messages related to fan states
 const (
 	MessageCurrentState         = "CURRENT-STATE"                     // incoming state data
@@ -109,4 +113,19 @@ type EnvironmentState struct {
 type DeviceCredentials struct {
 	SerialNumber string `json:"serialNumber"`
 	Password     string `json:"apPasswordHash"`
+}
+
+func round(f float64) int {
+	if math.Abs(f) < 0.5 {
+		return 0
+	}
+	return int(f + math.Copysign(0.5000, f))
+}
+
+func ConvertTempToFahr(temp int) int {
+	return 33 + round(float64(temp-2736)/5.54)
+}
+
+func ConvertTempFromFahr(temp int) int {
+	return 2736 + round(float64(temp-33)*5.54)
 }
