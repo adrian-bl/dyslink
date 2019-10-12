@@ -87,11 +87,13 @@ func (c *client) Connect() error {
 		func(client mqtt.Client, msg mqtt.Message) {
 			sendMessageCallback(c.opts.CallbackChan, msg, c.opts.Debug)
 		})
+	mqttOpts.SetOnConnectHandler(func(mclient mqtt.Client) {
+		mclient.Subscribe(c.getDeviceTopic("status/current"), 0, nil)
+	})
 	mqttClient := mqtt.NewClient(mqttOpts)
 	if token := mqttClient.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
-	mqttClient.Subscribe(c.getDeviceTopic("status/current"), 0, nil)
 	c.MqttClient = mqttClient
 	return nil
 }
