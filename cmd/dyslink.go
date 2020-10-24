@@ -13,8 +13,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/adrian-bl/dyslink"
 	"os"
+
+	"github.com/adrian-bl/dyslink/lib/dyslink"
 )
 
 var flagHost = flag.String("host", "10.0.42.137:1883", "The ip:port combination to connect to")

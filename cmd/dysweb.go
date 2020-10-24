@@ -19,7 +19,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/adrian-bl/dyslink"
+	"github.com/adrian-bl/dyslink/lib/dyslink"
 )
 
 var (
