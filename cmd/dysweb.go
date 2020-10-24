@@ -145,9 +145,10 @@ func (h *FanHandler) toggleState(w http.ResponseWriter) {
 	defer h.Status.Unlock()
 
 	state := &dyslink.FanState{
-		FanMode:   dyslink.FanModeOff,
-		FanSpeed:  "7",
-		Oscillate: dyslink.OscillateOn,
+		FanMode:    dyslink.FanModeOff,
+		FanSpeed:   "7",
+		Oscillate:  dyslink.OscillateOn,
+		SleepTimer: "30",
 	}
 	if h.Status.Fan.FanMode == dyslink.FanModeOff {
 		state.FanMode = dyslink.FanModeOn
