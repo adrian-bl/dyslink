@@ -124,6 +124,9 @@ func (h *FanHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case "/getstate.json":
 			h.serveState(w)
 			return
+		case "/toggle.json":
+			h.toggleState(w)
+			return
 		}
 	}
 	w.WriteHeader(404)
@@ -135,6 +138,24 @@ func (h *FanHandler) serveState(w http.ResponseWriter) {
 	h.Status.RUnlock()
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(h.Status)
+}
+
+func (h *FanHandler) toggleState(w http.ResponseWriter) {
+	h.Status.Lock()
+	defer h.Status.Unlock()
+
+	state := &dyslink.FanState{
+		FanMode:   dyslink.FanModeOff,
+		FanSpeed:  "7",
+		Oscillate: dyslink.OscillateOn,
+	}
+	if h.Status.Fan.FanMode == dyslink.FanModeOff {
+		state.FanMode = dyslink.FanModeOn
+	}
+	h.Client.SetState(state)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(state)
 }
 
 func (h *FanHandler) setState(w http.ResponseWriter, r *http.Request) {
