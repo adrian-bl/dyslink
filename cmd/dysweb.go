@@ -29,11 +29,16 @@ var (
 	flagListen = flag.String("listen", "127.0.0.1:9033", "ip:port to listen on")
 )
 
-var state = struct {
+type FanHandler struct {
+	Client dyslink.Client
+	Status *FanStatus
+}
+
+type FanStatus struct {
 	sync.RWMutex
 	Fan dyslink.ProductState     `json:"Fan"`
 	Env dyslink.EnvironmentState `json:"Env"`
-}{}
+}
 
 func main() {
 	flag.Parse()
@@ -52,20 +57,22 @@ func main() {
 		log.Fatalf("failed to connect to '%s': %v", *flagHost, err)
 	}
 
+	h := &FanHandler{
+		Client: c,
+		Status: &FanStatus{},
+	}
 	ctx := context.Background()
-
 	go func() {
-		if err := serveHttp(ctx, c, *flagListen); err != nil {
+		if err := serveHttp(ctx, h, *flagListen); err != nil {
 			log.Printf("serveHttp err: %v", err)
 		}
 	}()
-	go monitorStatus(ctx, c, cb)
+	go monitorStatus(ctx, h, cb)
 	<-ctx.Done()
 }
 
-func monitorStatus(ctx context.Context, c dyslink.Client, cb chan *dyslink.MessageCallback) {
-
-	c.RequestCurrentState()
+func monitorStatus(ctx context.Context, h *FanHandler, cb chan *dyslink.MessageCallback) {
+	h.Client.RequestCurrentState()
 	for {
 		select {
 		case <-ctx.Done():
@@ -73,57 +80,64 @@ func monitorStatus(ctx context.Context, c dyslink.Client, cb chan *dyslink.Messa
 		case msg := <-cb:
 			if msg.Error == nil {
 				fmt.Printf("> %+v\n", msg)
-				state.Lock()
+				h.Status.Lock()
 				if v, ok := msg.Message.(*dyslink.ProductState); ok {
-					state.Fan = *v
+					h.Status.Fan = *v
 				}
 				if v, ok := msg.Message.(*dyslink.EnvironmentState); ok {
-					state.Env = *v
+					h.Status.Env = *v
 				}
-				state.Unlock()
+				h.Status.Unlock()
 			}
 		}
 	}
 }
 
 // serveHttp setups the http server.
-func serveHttp(ctx context.Context, c dyslink.Client, addr string) error {
+func serveHttp(ctx context.Context, h *FanHandler, addr string) error {
 	srv := &http.Server{
-		Addr: addr,
+		Handler: h,
+		Addr:    addr,
 	}
 
 	go func() {
 		<-ctx.Done()
 		srv.Shutdown(ctx)
 	}()
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		handleHttp(c, w, r)
-	})
 	return srv.ListenAndServe()
 }
 
 // handleHttp dispatches http requests.
-func handleHttp(c dyslink.Client, w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" && r.URL.String() == "/" {
-		serveIndex(w)
-	} else if r.Method == "GET" && r.URL.String() == "/getstate.json" {
-		serveState(w)
-	} else if r.Method == "POST" && r.URL.String() == "/setstate.json" {
-		setState(c, w, r)
-	} else {
-		w.WriteHeader(404)
+func (h *FanHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		switch r.URL.String() {
+		case "/setstate.json":
+			h.setState(w, r)
+			return
+		}
 	}
+	if r.Method == "GET" {
+		switch r.URL.String() {
+		case "/":
+			h.serveIndex(w)
+			return
+		case "/getstate.json":
+			h.serveState(w)
+			return
+		}
+	}
+	w.WriteHeader(404)
 }
 
 // serveState serves the current fan state as json.
-func serveState(w http.ResponseWriter) {
-	state.RLock()
-	defer state.RUnlock()
+func (h *FanHandler) serveState(w http.ResponseWriter) {
+	h.Status.RLock()
+	h.Status.RUnlock()
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(state)
+	json.NewEncoder(w).Encode(h.Status)
 }
 
-func setState(c dyslink.Client, w http.ResponseWriter, r *http.Request) {
+func (h *FanHandler) setState(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	w.WriteHeader(200)
 
@@ -152,11 +166,11 @@ func setState(c dyslink.Client, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	c.SetState(state)
+	h.Client.SetState(state)
 }
 
 // serveIndex serves the main html.
-func serveIndex(w http.ResponseWriter) {
+func (h *FanHandler) serveIndex(w http.ResponseWriter) {
 	w.WriteHeader(200)
 	w.Write([]byte(`<html>
 <head>
